@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>【澜久】无法剥离的血肉</title>
+    <style>
+        /* ===== 全局重置 & 暗黑风格 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #c0b9a8;
+            font-family: 'Courier New', 'SimSun', monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ===== 主容器 - 模拟网页 ===== */
+        #app {
+            max-width: 820px;
+            width: 100%;
+            background: #12121a;
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            padding: 28px 32px 20px;
+            box-shadow: 0 0 60px rgba(80, 40, 40, 0.25);
+            position: relative;
+            min-height: 580px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s;
+        }
+
+        /* ===== 顶部：标题 + 进度 ===== */
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            border-bottom: 1px solid #2a2a3a;
+            padding-bottom: 14px;
+            margin-bottom: 22px;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+        }
+
+        #game-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #d4cdb0;
+            letter-spacing: 4px;
+            text-shadow: 0 0 12px rgba(180, 120, 80, 0.3);
+        }
+        #game-title small {
+            font-size: 13px;
+            font-weight: normal;
+            color: #6a6a7a;
+            letter-spacing: 1px;
+            margin-left: 10px;
+        }
+
+        #progress-area {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 14px;
+            color: #8a8a9a;
+        }
+        #progress-bar-bg {
+            width: 120px;
+            height: 6px;
+            background: #22222e;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: #a08060;
+            border-radius: 8px;
+            transition: width 0.45s ease;
+        }
+        #progress-text {
+            min-width: 52px;
+            text-align: right;
+            font-weight: bold;
+            color: #c0b080;
+        }
+
+        /* ===== 内容区 ===== */
+        #content {
+            flex: 1;
+            padding: 8px 0 18px;
+            min-height: 340px;
+        }
+
+        #page-content {
+            line-height: 1.85;
+            font-size: 15px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #c8c0b0;
+        }
+        #page-content .highlight {
+            color: #d4a060;
+            font-weight: bold;
+        }
+        #page-content .dim {
+            color: #6a6a7a;
+            font-size: 14px;
+        }
+        #page-content .divider {
+            display: block;
+            border-top: 1px dashed #2a2a3a;
+            margin: 16px 0;
+        }
+
+        /* ===== 线索提示（浮动在内容下方） ===== */
+        #hint-area {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #181822;
+            border-left: 3px solid #5a4a3a;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #9a8a7a;
+        }
+        #hint-area strong {
+            color: #b8a080;
+        }
+
+        /* ===== 搜索栏 ===== */
+        #search-section {
+            margin-top: 18px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-top: 1px solid #1e1e2a;
+            padding-top: 18px;
+        }
+        #search-input {
+            flex: 1;
+            min-width: 160px;
+            padding: 10px 16px;
+            background: #0e0e16;
+            border: 1px solid #2a2a3e;
+            border-radius: 6px;
+            color: #d0c8b8;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: border 0.2s;
+        }
+        #search-input:focus {
+            border-color: #7a6a5a;
+            background: #12121c;
+        }
+        #search-input::placeholder {
+            color: #4a4a5a;
+            font-size: 13px;
+        }
+        #search-btn {
+            padding: 10px 26px;
+            background: #2a2a3a;
+            border: 1px solid #3a3a4e;
+            border-radius: 6px;
+            color: #c8c0b0;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #search-btn:hover {
+            background: #3a3a50;
+            border-color: #6a5a4a;
+        }
+        #search-btn:active {
+            transform: scale(0.97);
+        }
+
+        #search-feedback {
+            width: 100%;
+            margin-top: 8px;
+            font-size: 13px;
+            color: #6a5a4a;
+            min-height: 20px;
+        }
+
+        /* ===== 底部 ===== */
+        #footer {
+            margin-top: 24px;
+            padding-top: 14px;
+            border-top: 1px solid #1a1a26;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px 16px;
+            font-size: 12px;
+            color: #4a4a5a;
+        }
+        #clue-counter {
+            color: #7a7a8a;
+        }
+        #clue-counter span {
+            color: #b8a080;
+            font-weight: bold;
+        }
+        #footer-copyright {
+            letter-spacing: 1px;
+        }
+        #footer-copyright a {
+            color: #5a5a6a;
+            text-decoration: none;
+        }
+        #footer-copyright a:hover {
+            color: #8a7a6a;
+        }
+
+        #reset-btn {
+            background: none;
+            border: 1px solid #2a2a3a;
+            color: #5a5a6a;
+            padding: 4px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+        #reset-btn:hover {
+            color: #9a8a7a;
+            border-color: #4a4a5a;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 600px) {
+            #app { padding: 18px 16px; }
+            #game-title { font-size: 17px; letter-spacing: 2px; }
+            #game-title small { font-size: 11px; margin-left: 4px; }
+            #progress-bar-bg { width: 80px; }
+            #page-content { font-size: 14px; }
+            #search-section { flex-direction: column; align-items: stretch; }
+            #search-btn { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <!-- ===== 顶部栏 ===== -->
+    <div id="header">
+        <div id="game-title">
+            【澜久】无法剥离的血肉
+            <small>· 灵境档案</small>
+        </div>
+        <div id="progress-area">
+            <span>记忆</span>
+            <div id="progress-bar-bg">
+                <div id="progress-bar-fill" style="width:0%;"></div>
+            </div>
+            <span id="progress-text">0%</span>
+        </div>
+    </div>
+
+    <!-- ===== 内容 ===== -->
+    <div id="content">
+        <div id="page-content"><!-- 由 js 动态渲染 --></div>
+        <div id="hint-area"><!-- 由 js 动态渲染 --></div>
+    </div>
+
+    <!-- ===== 搜索栏 ===== -->
+    <div id="search-section">
+        <input id="search-input" type="text" placeholder="在灵境中搜索关键词…" autofocus>
+        <button id="search-btn">检索</button>
+        <div id="search-feedback"></div>
+    </div>
+
+    <!-- ===== 底部 ===== -->
+    <div id="footer">
+        <div id="clue-counter">🕯️ 已剥离 <span id="clue-num">0</span> / <span id="clue-total">14</span> 片血肉</div>
+        <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+            <span id="footer-copyright">© 2026 <a href="#">laodao.six</a> · 灵感源自《记忆碎片》</span>
+            <button id="reset-btn">⟲ 重开</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================================================================
+    //  1. 游戏数据 —— 所有页面
+    // ================================================================
+    const PAGES = {
+
+        // -------- 扉页 (0/14) --------
+        '扉页': {
+            id: '扉页',
+            title: '扉页',
+            content: `你叫凌久时，你的父母已经离世，目前你正从事一份有关于婚外情调查的自由职业，名片和重要顾客名单夹在你的钱包里。
+
+        24岁后的某一天你患上失忆症，那天以后所有连续性记忆最多只能存在24小时，需要每天写日记并通过页脚折角的方式来标记工作进度以及当日是否有重要事件发生，以便后续直接翻看读取。
+
+        写完后要把日记本妥善存放。
+
+        此外，为防电子产品出现故障，手机或者相机内的任何照片都需要洗出来放进钱包；手机内有专人安装了通话录音功能，记得及时开启。(若功能出现故障，请联系吴先生 xxx-xxxx-xxxx)
+
+        一年过完要换一本日记，换日记本时要在扉页上抄录这段话。
+
+        —— 没关系，生活仍然可以很顺利。`,
+            hint: '🔍 试着在灵境中搜索：\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\n\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000\u3000「日记」\u3000「录音」\u3000「照片」\u3000「钱包」',
+            clues: 0
+        },
+
+        // -------- 日记1 (1/14) --------
+        '日记1': {
+            id: '日记1',
+            title: '2008.12.25 雨夹雪',
+            content: `“失忆症患者最好不要开车，以防开到半路时忘了要去哪里，也忘了是从哪里来，更糟糕的是，忘了怎么开车。”
+
+        这是我朋友高大威的原话，它被记录在几天前的日记里，现在我原封不动地抄过来，原因是那位朋友竟奇迹般地预判到了我的悲剧。
+
+        事实上我的失忆症也许还没有严重到这种地步，哪怕是连续五小时的车程，我的脑子依然可以成功辨认出刹车和油门的区别，不至于把车开到沟里去，但我确实忘记了一件事，比如说我现在要去哪里。
+
+        警笛声在我的右前方拉响，我猜这次不是一场轻微的连环追尾事故，要不然也不会连续来了那么多辆警车。
+
+        我的车被夹在中间，夹住我的车又被挤在整一条龙的追尾队伍中，我们这群人带着破掉的车子好像就这样冻在了水泥路上，而我还是没想起来我要去哪里。
+
+        一个警察刚刚从我车边走过，看到缩在驾驶座上写日记的我时似乎有些惊讶，要么是他认识我，要么是我这种行为确实有些奇怪，好在他只是看了一眼就往后走了，所以我猜是第二种原因。
+
+        不远处的路牌上画着直行、左拐以及下高速的标志，我本来是要走哪一个？
+
+        连续翻看前段时间的日记，竟也没有明确记下我今天要做什么，甚至近半个月我都没有在工作，唯一一件标记重要的事情是12月2日同我以前的警校同学高大威见面叙旧。
+
+        钱包放在上衣口袋，打开来确实有很多照片，看样子都是偷拍的，画面大同小异，是一些男男女女私会照片和一些车牌照——我不干警察后居然跑去干这种私家侦探的活儿了吗？
+
+        十分钟前发生了一件奇怪的事情。我下车透口气，沿着追尾的队伍往前走了一段路，最前面那辆车侧翻在高速护栏上，一群医生正将一个浑身是血的人从驾驶座里往外扒拉，而我的注意力却在那辆车扭曲的<strong>车牌</strong>上——那几个数字好熟悉。
+
+        我好像……见过这张车牌照片？
+
+        现在我回到了车里，救护人员抬着那个人匆匆赶往堵在外围的救护车，而我在翻找那辆车的车主。照片后面只写了拍摄日期，12月2日。
+
+        我想到了什么，将照片对着那天日记上的污渍比了上去，严丝合缝。
+
+        —— 高大威的车？`,
+            hint: '🔎 你注意到那张车牌照片了。搜索「车牌」或「高大威」或许能揭开什么……',
+            clues: 1
+        },
+
+        // -------- 日记2 (2/14) --------
+        '日记2': {
+            id: '日记2',
+            title: '2003.12.24 大雪',
+            content: `冷，今天下大雪，雪很大，好冷。
+
+        他们要出发了，那辆打头阵的灵车应该是老高在开，他现在没在站在我家楼下抽烟……他刚刚抬头看我干嘛？
+
+        该死，把窗帘都拉上！
+
+        所以现在我跟个没事人儿似的把自己锁在屋子里，电话响了八百遍也不去接，反而缩在椅子上写东西，但我能写什么，随便写点什么，不能停下来，不要去听那个电话。
+
+        车走了，他们走了，他们去殡仪馆了，他要被烧掉了，这样也好，这样很好，他肯定不喜欢自己肩膀和额头上穿个洞然后冷冰冰地躺在停尸房里，对，他最不喜欢这样，火烧了就好，烧了就是一团灰，到时候我再拿走骨灰盒，把他撒海里，他说过的，要撒海里去。
+
+        我没关煤气，我的<strong>打火机</strong>去哪儿了，得抽根烟……
+
+        电话又响了，都疯了，给我打电话到底有什么用，我能让他死而复生吗！
+
+        我脑子是被驴踢了吗，他让我跑东边去把风我就屁颠颠地去了，那里黑得什么都没有，他肯定猜到了，这个疯子，我居然就这样跑过去了，还接了他的枪就跑，他倒下去我都没看见，那把土枪出膛时候的火星子跟炸烟花一样。
+
+        终于跑过去了，看到有颗子弹从他额头中央穿过去，翻过来后脑勺那里被炸了个窟窿。
+
+        本来应该送他苹果，毕竟吃个苹果，平平安安的。
+
+        其实我应该送他的。都是我不好。
+
+        为什么要去接他的枪。为什么要从他身边跑开。为什么不送他苹果。
+
+        为什么死的不是我。
+
+        打火机呢。找不到……怎么办，得去买一个新的，给他也顺包烟，对，再给他买点下酒菜。
+
+        <strong>阮澜烛</strong>死了，今天他要被烧了。
+
+        煤气味好难闻，没有打火机也没关系了，就这样吧。
+
+        写什么日记，这得是正儿八经的遗书。
+
+        澜烛，对不起。`,
+            hint: '💔 2003年12月24日……搜索「阮澜烛」或「打火机」继续深入。',
+            clues: 2
+        },
+
+        // -------- 日记3 (3/14) --------
+        '日记3': {
+            id: '日记3',
+            title: '2008.12.2 多云到阴',
+            content: `门合上的声音像是什么东西炸开，尤其响，我下意识扣紧了安全带，看眼坐在驾驶座的高大威。
+
+        “要我说失忆症患者最好不要开车，以防开到半路时忘了要去哪里，也忘了是从哪里来，更糟糕的是，忘了怎么开车。”
+
+        我感觉到高大威借着看侧视镜的角度瞥了我好几眼，大概是觉得我现在沉默地将注意力倾注在日记本上让场面有些尴尬，但他似乎又猜到了什么，没再像之前那样继续说话。
+
+        他知道我有失忆症，应该已经猜到我发病了。
+
+        “你说过，今天约我出来，是想叙叙旧。”没等我搞清楚一切，高大威主动做出了提示，“也许可以看看你的通话录音，你昨晚给我打电话了。”
+
+        我的手机里确实有一个录音文件夹，但点开后里面空空如也，不死心地找到回收站，仍旧是空白。没有昨晚的录音，甚至近半年都没有。很明显，<strong>录音</strong>功能坏了，需要去修。
+
+        “自从……自从阮澜烛死后，你很少主动找我，这几年要不是我每年约你出来，也许我俩……”
+
+        “你的手机有通话录音吗？”我问向高大威。
+
+        他点点头，一只手松开方向盘，从衣袋里拿出自己的手机，“当然，做警察的，都会留意一些。”
+
+        我拿着高大威的手机找到录音文件，发现自己从昨晚十点到刚刚，拢共给他打过3个电话，快速地听了个遍，问他能否将录音上传到我的手机上，他欣然应允。
+
+        找出数据线一通操作后，我将手机递还给高大威，他看都没看一眼，就将东西塞回了衣袋中。
+
+        之后的行程，我们去了<strong>竹洞山</strong>。
+
+        最后高大威送我回家，我和他道了别，让他回去路上小心。
+
+        “再见，久时，下次见。”离开前他这样对我说。
+
+        他似乎已经忘了，今天是澜烛的生日。`,
+            hint: '📞 通话录音里藏着什么？搜索「录音」或「竹洞山」试试。',
+            clues: 3
+        },
+
+        // -------- 日记4 (4/14) --------
+        '日记4': {
+            id: '日记4',
+            title: '2003.12.31 晴',
+            content: `“久时，今天还好吗？”
+
+        高大威总是喜欢拿这句话当作看望我的开场白，我敷衍地点头，眼睛照常将注意力放在窗外的阳光上。
+
+        病房外没什么树，没什么好看的，也没什么好写的，但我更不想和高大威讲话。
+
+        按理说我应该感谢他，如果不是他见我不接电话，中途折返，破开了我家那扇紧锁的门，我应该已经一氧化碳中毒死了。
+
+        死了也没什么不好。阮澜烛不也死了。
+
+        阮澜烛已经被烧掉了。连续的记忆就停在这里。
+
+        “久时，医生说还是有治好的希望的。只是缺氧引起的脑部病症治疗都需要时间，现在你得习惯干什么都记下来，对以后的生活有帮助。”
+
+        我看眼笔下的日记本，前一页还是我几天前癫狂的<strong>自杀</strong>遗言。可惜失败了。
+
+        “他……澜烛的<strong>骨灰</strong>呢？”
+
+        高大威没有回答我。我对他的避而不谈有些生气，又问了一遍。
+
+        高大威叹口气，拉开了我床头柜的抽屉，一个实木制骨灰盒静静地放在里面。
+
+        “久时，你前天、昨天都问过这个问题。”
+
+        好吧。看来，我真的生病了，活该我失业。
+
+        所以都得记下来，说的话也都要记下来，日记也好，录音也好，最重要的是，等能出院了，记得去海边。送澜烛回家吧。`,
+            hint: '🕯️ 你失去了工作，也差点失去生命。搜索「自杀」或「骨灰」……',
+            clues: 4
+        },
+
+        // -------- 日记5 (5/14) --------
+        '日记5': {
+            id: '日记5',
+            title: '2008.6.1 暴雨',
+            content: `回家路上收到了高大威的祝福短信，原来今天是我的生日，但记起来也无济于事，我好像没有给自己过生日的习惯。
+
+        最近的心思大概都扑在工作上，前几天的电话录音里同行熊漆说有一个要求很多但出手极其大方的顾客，他搞不定，想要转让给我。
+
+        今天白天和那个顾客见了一面，顾客姓<strong>夏</strong>，想要知道自己的丈夫严巴郎是否存在婚内出轨的实质性证据，并付了一大笔定金要求我立马开始工作，但少见地并未给工作设下任何时间限制。
+
+        根据夏女士提供的资料来看，严巴郎是个金融工作者，晚上应酬偏多，车牌号附在钱包里。
+
+        让我比较在意的是，夏女士在见面结束后又给了我另一个号码，说是给我的另一半定金。我费心费力检索过那个号码，是一个虚拟号，但根据我自学的一些网络技术，还是破解出了其背后的组织——X组织。
+
+        我不想这样做，但……或许可以修复那支<strong>录音笔</strong>。
+
+        深夜两点多，那支录音笔内可以修复的内容已经全部导入了手机录音文件夹。夏女士说只要我可以抓住严巴郎出轨证据，她不介意将后面的报酬换成其他东西。
+
+        临睡前，我又将录音内容听了一遍。重要的是，我又一次找到了活着的意义。
+
+        是的，澜烛肯定希望我好好活着，要多同人交流。
+
+        不过，我更喜欢冬天出门。`,
+            hint: '📼 录音笔里有什么？搜索「夏女士」或「录音笔」深入。',
+            clues: 5
+        },
+
+        // -------- 日记6 (6/14) --------
+        '日记6': {
+            id: '日记6',
+            title: '2007.12.2 阴',
+            content: `再荒诞破碎的日子过久了，也会逐渐适应下来。
+
+        今天打扫卫生时在澜烛养的那盆早就干涸的<strong>水草</strong>箱子里看到一支陈旧的<strong>录音笔</strong>，看起来是警校毕业时澜烛送给我那支，可惜出了点故障，什么都听不出来，以后也许可以找个专业人士修一下。
+
+        澜烛就爱养一些奇奇怪怪的东西，水草、蜗牛什么的，不过我记得他确实受动物欢迎，刚工作时一起租房子住，我养的那只猫咪栗子也很亲他，不过栗子后来去哪儿了……
+
+        记不起来了，翻日记也不知道翻哪一年的，大概也死了吧。
+
+        不过翻看间注意到了2006年12月24日那页，几乎折了半页的角，什么事这么重要？
+
+        尽快找个人修一下这支录音笔。`,
+            hint: '🌿 水草箱里的录音笔……搜索「录音笔」或「水草」。',
+            clues: 6
+        },
+
+        // -------- 日记7 (7/14) 中秋节 --------
+        '日记7': {
+            id: '日记7',
+            title: '2007.9.25 阴',
+            content: `今天是中秋节，记得在警校时澜烛就喜欢吃豆沙馅的月饼，我就买了两盒。
+
+        好搞笑，原来我每年中秋节都要写一遍这句话。
+
+        又看到了2006年12月24日那页。
+
+        —— 那页到底写了什么？`,
+            hint: '🌕 中秋节……搜索「戒指」或「藏头」或许有别的发现。',
+            clues: 7
+        },
+
+        // -------- 日记8 (8/14) 新年礼物 --------
+        '日记8': {
+            id: '日记8',
+            title: '2004.1.21 多云',
+            content: `今天过年，窗外放起了烟花，记忆里的第一份新年礼物就是澜烛送的，是刚工作那一年，他给了我一个盒子，盒子打开是一张信纸，信纸下面是一枚用黑绳穿起来的<strong>戒指</strong>。
+
+        “我实在不知道送什么
+        爱这枚戒指上的黑曜石
+        你喜欢吗
+        凌凌。”
+
+        我当时是怎么回的来着？
+
+        “我也爱你，澜烛。”他那点喜欢<strong>藏头</strong>的小把戏，总是这么拙劣，但我们还是玩得乐此不疲。
+
+        对，我和澜烛是彼此的爱人，我永远不会忘记这件事。
+
+        今天天气很好，海也很蓝，想必也不会很冷。
+
+        没什么好写的了，我只是想他了。`,
+            hint: '💍 藏头诗……搜索「戒指」或「藏头」揭开爱的密码。',
+            clues: 8
+        },
+
+        // -------- 日记9 (9/14) 过年重复 --------
+        '日记9': {
+            id: '日记9',
+            title: '2007.2.17 多云',
+            content: `今天过年，窗外放起了烟花，记忆里的第一份新年礼物就是澜烛送的，是刚工作那一年，他给了我一个盒子，盒子打开是一张信纸，信纸下面是一枚用黑绳穿起来的戒指。
+
+        “我实在不知道送什么
+        爱这枚戒指上的黑曜石
+        你喜欢吗
+        凌凌。”
+
+        “我也爱你，澜烛。”他那点喜欢藏头的小把戏，总是这么拙劣。
+
+        又看到了2006年12月24日那页。
+
+        —— 那页纸，像一根刺。`,
+            hint: '🎆 又是过年……那页2006.12.24的日记，搜索「真相」或许能撕开它。',
+            clues: 9
+        },
+
+        // -------- 日记10 (10/14) --------
+        '日记10': {
+            id: '日记10',
+            title: '2004.12.24 小雪',
+            content: `高大威把我劈头盖脸骂了一顿，因为我从年初到年末都在寻找各种方式自杀，跳海、割腕、跳楼、吞药、烧炭，可惜的是，都没有成功。
+
+        我时常想，是否因为阮澜烛的死真的是替我挡了一劫，所以现在连阎王都不收我了。
+
+        这未免也太讽刺，因为我才是该死的那个，长命百岁的合该是阮澜烛。
+
+        如果老天有眼的话，现在我就不会站在海边悼念着阮澜烛，而应该躺在海底，如愿以偿地死去。
+
+        该死，为什么死的不是我。`,
+            hint: '🌊 2004年的圣诞夜……搜索「自杀」继续追问。',
+            clues: 10
+        },
+
+        // -------- 日记11 (11/14) --------
+        '日记11': {
+            id: '日记11',
+            title: '2005.12.25 小雪',
+            content: `今天高大威给我带来一个消息，我甚至不知道该秉持着什么心情写下这篇日记。
+
+        他说，当年杀死阮澜烛的那个人<strong>背后还有人</strong>。
+
+        这意味着，这意味着，阮澜烛的仇我还没有报，我不能再寻死了，我要为阮澜烛讨回公道！
+
+        高大威说那个人再次犯案了，现在就是布网抓住他的好时机。
+
+        澜烛，不管用什么手段，我都会为你<strong>复仇</strong>。`,
+            hint: '🔪 复仇开始了。搜索「复仇」或「背后还有人」。',
+            clues: 11
+        },
+
+        // -------- 日记12 (12/14) 撕页版·真实 --------
+        '日记12-真实': {
+            id: '日记12-真实',
+            title: '2006.12.24 雨夹雪 (撕页·真实)',
+            content: `我脱下雨衣，上面都是血。
+
+        高大威把它扔进了铁桶里，打火机卷起的火吞噬了所有。
+
+        后来高大威好像和我吵了起来，但具体内容我不记得了，我那天醉醺醺的，什么都不记得，高大威烧我雨衣干什么？我穿雨衣出门干嘛了？
+
+        他到底在冲我吼什么？
+
+        就像他说的那样，明明一切都是他让我去做的不是吗？杀掉那个害死阮澜烛的幕后真凶，顺便将高大威正在查的案子收网。现在他要升职加薪了，就要撇清关系了吗？
+
+        他一直！一直！都是个懦夫！
+
+        不行，得撕掉这页。
+
+        我不需要知道这件事，不是吗？
+
+        这不是终点。高大威可以退出，我不可以。我必须得活着，万一杀死阮澜烛的还有其他人呢？
+
+        一定还有其他人。
+
+        在我死之前，要全都报复回去。
+
+        我得靠这些活着。不能让阮澜烛白死。绝对不能。
+
+        所以冷静下来，凌久时，好好想想，下一个凶手最可能是谁？明天你就会忘记，今天的日记要做出提示，一切都没有结束。
+
+        那支坦白一切的<strong>录音笔</strong>得销毁。不过……这是澜烛送给我的……扔<strong>水草</strong>箱里去吧，以防万一后面它被修复，所以……也应该在里面动点手脚，比如……做出幕后真凶的提示。`,
+            hint: '📄 撕掉的日记……搜索「真相」或「录音笔」拼凑完整。',
+            clues: 12
+        },
+
+        // -------- 日记12-假 (12/14 折大角版) --------
+        '日记12-假': {
+            id: '日记12-假',
+            title: '2006.12.24 大雨 (折大角·编造)',
+            content: `下大雨，雪都化了。好冷。
+
+        高大威带来了最新的消息，当年杀死阮澜烛的那个人背后的<strong>组织</strong>依旧逍遥法外，务必寻找一切蛛丝马迹，为阮澜烛复仇。
+
+        获取消息渠道各种各样，不如就从成为一个<strong>私家侦探</strong>开始。`,
+            hint: '📌 折了大角的日记。搜索「私家侦探」或「组织」。',
+            clues: 12
+        },
+
+        // -------- 尾声 (13/14) --------
+        '尾声': {
+            id: '尾声',
+            title: '尾声 · 2001.2.2 晴',
+            content: `今年过年，窗外放起了烟花，澜烛送了我第一份新年礼物，他给了我一个盒子，盒子打开是一张信纸，信纸下面是一枚用黑绳穿起来的戒指。
+
+        “我实在不知道送什么
+        爱这枚戒指上的黑曜石
+        你喜欢吗
+        凌凌。”
+
+        我当时是怎么回的来着？
+
+        “我也爱你，澜烛。”
+
+        —— 完 ——
+
+        🕯️ 你剥离了所有的血肉，记忆在灰烬中重生。`,
+            hint: '🏁 终章。搜索「我爱你」或「澜烛」重温最初。',
+            clues: 13
+        },
+
+        // -------- 通关 (14/14) 隐藏结局 --------
+        '通关': {
+            id: '通关',
+            title: '✨ 记忆完整 · 真相浮现',
+            content: `你终于拼凑出了全部真相——
+
+        2003年12月24日，阮澜烛牺牲，凌久时开枪击毙凶手，随后因自责开煤气自杀未遂，患上失忆症。
+
+        高大威为阻止凌久时继续自杀，谎称“背后还有人”。凌久时以此为信念活了下去，却在2006年发现高大威利用了自己。
+
+        失忆症让凌久时忘记一切，只留下日记和录音笔中的提示。2008年，他通过夏女士的委托修复录音笔，听到了高大威的坦白。
+
+        最终，凌久时将目标锁定在高大威身上，借夏女士之手策划了那场高速追尾——高大威车祸身亡。
+
+        —— 阮澜烛的死，究竟是意外，还是高大威的拉拽所致？
+
+        真相取决于你的判断。
+
+        “我也爱你，澜烛。”
+
+        🖤 感谢你走完这场记忆迷宫。`,
+            hint: '🎉 你已经找到了所有碎片。记忆恢复度：100%。',
+            clues: 14
+        }
+    };
+
+    // ================================================================
+    //  2. 关键词 → 页面映射（跳转规则）
+    // ================================================================
+    const ROUTES = {
+        // 人物
+        '高大威': '日记1',
+        '阮澜烛': '日记2',
+        '夏女士': '日记5',
+        '吴先生': '日记3',
+
+        // 物品 / 线索
+        '车牌': '日记1',
+        '录音': '日记3',
+        '录音笔': '日记6',
+        '水草': '日记6',
+        '打火机': '日记2',
+        '骨灰': '日记4',
+        '戒指': '日记8',
+        '藏头': '日记8',
+
+        // 地点 / 事件
+        '竹洞山': '日记3',
+        '自杀': '日记4',
+        '复仇': '日记11',
+        '真相': '日记12-真实',
+        '组织': '日记12-假',
+        '私家侦探': '日记12-假',
+
+        // 特殊触发
+        '我爱你': '尾声',
+        '澜烛': '尾声',
+        '日记': '扉页',
+        '照片': '扉页',
+        '钱包': '扉页',
+        '背后还有人': '日记11'
+    };
+
+    // ================================================================
+    //  3. 游戏状态
+    // ================================================================
+    let currentPage = '扉页';
+    const discovered = new Set(); // 已解锁的页面 id
+
+    // 所有有效页面 id（用于进度计算）
+    const ALL_PAGE_IDS = [
+        '扉页', '日记1', '日记2', '日记3', '日记4', '日记5', '日记6',
+        '日记7', '日记8', '日记9', '日记10', '日记11',
+        '日记12-真实', '日记12-假', '尾声', '通关'
+    ];
+
+    // ================================================================
+    //  4. 渲染引擎
+    // ================================================================
+    function render(pageId) {
+        const page = PAGES[pageId];
+        if (!page) {
+            // 兜底：如果页面不存在，回到扉页
+            currentPage = '扉页';
+            return render('扉页');
+        }
+
+        // 更新当前页
+        currentPage = pageId;
+        discovered.add(pageId);
+
+        // ---- 内容 ----
+        const contentEl = document.getElementById('page-content');
+        // 转义换行，保留 <strong> 等标签
+        let html = page.content.replace(/\n/g, '<br>');
+        // 但 <strong> 已经存在，不需要额外转义
+        contentEl.innerHTML = html;
+
+        // ---- 提示 ----
+        document.getElementById('hint-area').innerHTML = page.hint;
+
+        // ---- 进度 ----
+        const total = ALL_PAGE_IDS.length; // 14
+        const found = discovered.size;
+        const pct = Math.min(100, Math.round((found / total) * 100));
+        document.getElementById('progress-bar-fill').style.width = pct + '%';
+        document.getElementById('progress-text').textContent = pct + '%';
+
+        // ---- 线索计数 ----
+        document.getElementById('clue-num').textContent = Math.min(found, total);
+        document.getElementById('clue-total').textContent = total;
+
+        // ---- 清空搜索反馈 ----
+        document.getElementById('search-feedback').textContent = '';
+        document.getElementById('search-input').value = '';
+        document.getElementById('search-input').focus();
+
+        // ---- 如果通关 ----
+        if (pageId === '通关') {
+            document.getElementById('search-input').placeholder = '🎉 你已找回全部记忆…';
+        }
+    }
+
+    // ================================================================
+    //  5. 搜索逻辑
+    // ================================================================
+    function performSearch() {
+        const input = document.getElementById('search-input');
+        const keyword = input.value.trim();
+
+        if (!keyword) {
+            document.getElementById('search-feedback').textContent = '⚠️ 请输入一个关键词。';
+            return;
+        }
+
+        // 精确匹配（忽略大小写，统一转小写比较，但保留原词显示）
+        const lower = keyword.toLowerCase();
+        let target = null;
+
+        // 遍历路由表，匹配关键词（不区分大小写）
+        for (const [key, value] of Object.entries(ROUTES)) {
+            if (key.toLowerCase() === lower) {
+                target = value;
+                break;
+            }
+        }
+
+        // 额外：如果搜索 "凌久时"，跳转到扉页（自我认知）
+        if (lower === '凌久时' || lower === '凌久时') {
+            target = '扉页';
+        }
+
+        if (target) {
+            const targetPage = PAGES[target];
+            if (targetPage) {
+                document.getElementById('search-feedback').textContent = '';
+                render(target);
+
+                // 如果到达通关页，自动触发特殊效果
+                if (target === '通关') {
+                    setTimeout(() => {
+                        document.getElementById('search-feedback').textContent = '🕊️ 记忆完整。感谢你的探索。';
+                    }, 300);
+                }
+                return;
+            }
+        }
+
+        // 未匹配
+        document.getElementById('search-feedback').textContent =
+            `❌ 在灵境中未找到与「${keyword}」相关的记忆碎片。再试试别的词吧。`;
+    }
+
+    // ================================================================
+    //  6. 重置游戏
+    // ================================================================
+    function resetGame() {
+        discovered.clear();
+        // 保留扉页为起始
+        render('扉页');
+        document.getElementById('search-feedback').textContent = '🔄 记忆已清零，重新开始。';
+        document.getElementById('search-input').placeholder = '在灵境中搜索关键词…';
+    }
+
+    // ================================================================
+    //  7. 绑定事件 & 启动
+    // ================================================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // 搜索按钮
+        document.getElementById('search-btn').addEventListener('click', performSearch);
+
+        // 回车键
+        document.getElementById('search-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performSearch();
+            }
+        });
+
+        // 重置按钮
+        document.getElementById('reset-btn').addEventListener('click', resetGame);
+
+        // 首次渲染——从扉页开始
+        render('扉页');
+    });
+</script>
+</body>
+</html>
